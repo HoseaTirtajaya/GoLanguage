@@ -1,25 +1,45 @@
 package main
 
-import(
-    // "fmt"
-    "net/http"
-    "github.com/gorilla/mux"
-    "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
-type Post struct{
-    title string `json: "title"` 
+type Article struct {
+	Title   string `json:"Title"`
+	Desc    string `json:"Desc"`
+	Content string `json:"Content"`
 }
 
-var posts []Post
+type Articles []Article
 
-func handleGetAll(w http.ResponseWriter, r *http.Request){
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(posts)
+func allArticles(w http.ResponseWriter, r *http.Request) {
+	articles := Articles{
+		Article{
+			Title:   "Go Language",
+			Desc:    "Golang Tutorial",
+			Content: "Hello World",
+		},
+	}
+	fmt.Println("ENDPOINT HIT: All Articles Endpoint")
+	json.NewEncoder(w).Encode(articles)
 }
 
-func main(){
-    r := mux.NewRouter()
-    r.HandleFunc("/", handleGetAll).Methods("GET")
-    http.ListenAndServe(":8080", r)
+func homePage(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Homepage Endpoint Hit")
+}
+
+func handleRequest() {
+	r := mux.NewRouter()
+	http.HandleFunc("/", homePage)
+	http.HandleFunc("/", allArticles)
+	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+func main() {
+	handleRequest()
 }
