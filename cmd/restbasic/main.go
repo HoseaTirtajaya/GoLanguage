@@ -42,7 +42,7 @@ func handleRequest() {
 	// http.HandleFunc("/", homePage)
 	myRouter.HandleFunc("/articles", allArticles).Methods("GET")
 	myRouter.HandleFunc("/PostArticle", postArticle).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", myRouter))
 }
 
 func main() {
