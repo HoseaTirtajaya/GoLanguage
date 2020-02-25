@@ -1,41 +1,68 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
-	"os"
 
-	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 )
 
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
+	hostname = "localhost"
+	hostPort = 5432
+	username = "postgres"
 	password = "Circumstances123"
 	dbname   = "golanguage"
 )
 
 func main() {
-
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+	connString := fmt.Sprintf("port=%d host=%s user=%s "+
 		"password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+		hostPort, hostname, username, password, dbname)
 
-	conn, err := pgx.Connect(context.Background(), psqlInfo)
+	db, err := sql.Open("postgres", connString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connection to database: %v\n", err)
-		os.Exit(1)
+		panic(err)
 	}
-	defer conn.Close()
+	// fmt.Println("You are connected indeed")
+	defer db.Close()
 
-	var name string
-	var weight int64
-	err = conn.QueryRow(context.Background(), "select name, weight from widgets where id=$1", 42).Scan(&name, &weight)
+	err = db.Ping()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
+		panic(err)
 	}
 
-	fmt.Println(name, weight)
+	fmt.Println("Successfully connected!")
+
+	insertStatement := ("INSERT INTO users(username) VALUES ($1) returning id_user;")
+	id_user := 0
+
+	err = db.QueryRow(insertStatement, "Extillius").Scan(&id_user)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("New Record is: ", id_user)
+
+	getAllStatement := ("SELECT * FROM users")
+
+	rows, err := db.Query(getAllStatement)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var name string
+
+		err = rows.Scan(&id, &name)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(id, name)
+	}
+	err = rows.Err()
+	if err != nil {
+		panic(err)
+	}
 }
