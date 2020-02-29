@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	_ "github.com/HoseaTirtajaya/GoLanguage/restAPI/Router"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 )
